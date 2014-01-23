@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 	<title></title>
+<link rel="stylesheet" href="reset.css"/>
 <script src="three.js/build/three.min.js"></script>
 <style type="text/css">
 canvas {
@@ -22,7 +23,8 @@ width:100%; height:100%;
 				this.last = this.now;
 			}
 		};
-
+		
+		var keys = [];
 		var scene = new THREE.Scene();
 		var camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
 		
@@ -42,13 +44,34 @@ width:100%; height:100%;
 
 			time.update();
 
-			cube.rotation.x += time.diff / 1000;
-			cube.rotation.y += time.diff / 1000;
+			if(keys.indexOf(37) != -1) { //left
+				cube.rotation.y -= time.diff / 1000;
+				cube.position.x -= time.diff / 1000;
+			}
+			if(keys.indexOf(39) != -1) { //right
+				cube.rotation.y += time.diff / 1000;
+				cube.position.x += time.diff / 1000;
+			}
+			if(keys.indexOf(38) != -1) { //up
+				cube.rotation.x -= time.diff / 1000;
+				cube.position.z -= time.diff / 1000;
+			}
+			if(keys.indexOf(40) != -1) { //down
+				cube.rotation.x += time.diff / 1000;
+				cube.position.z += time.diff / 1000;
+			}
 
 			renderer.render(scene,camera);
 		};
 
 		render();
+
+		window.addEventListener('keydown',function(e) {
+			if(keys.indexOf(e.keyCode) == -1) keys.push(e.keyCode);
+		});
+		window.addEventListener('keyup',function(e) {
+			if(keys.indexOf(e.keyCode) != -1) keys.splice(keys.indexOf(e.keyCode),1);
+		});
 	</script>
 </body>
 </html>
