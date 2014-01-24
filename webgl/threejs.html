@@ -5,6 +5,7 @@
 	<title></title>
 <link rel="stylesheet" href="reset.css"/>
 <script src="three.js/build/three.min.js"></script>
+<script src="resources/OrbitControls.js"></script>
 <style type="text/css">
 body,html {
 width:100%; height:100%;
@@ -32,47 +33,72 @@ width:100%; height:100%;
 		
 		var keys = [];
 		var scene = new THREE.Scene();
-		var camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
-		
+
+		//lighting & ambiance
+		var ambiance = new THREE.AmbientLight(0x111111);
+		var light = new THREE.PointLight(0xffffff);
+		light.position.set(0,250,50);
+
+		// scene.fog = new THREE.FogExp2(0x9999ff,0.00025);
+
+		//camera
+		var camera = new THREE.PerspectiveCamera(65,window.innerWidth/window.innerHeight,0.1,20000);
+		camera.position.set(0,150,400);
+		camera.lookAt(scene.position);
+
+		//renderer & controls
 		var renderer = new THREE.WebGLRenderer({antialias:true});
 		renderer.setSize(window.innerWidth,window.innerHeight);
 		document.body.appendChild(renderer.domElement);
 
-		var materials = [];
-		materials.push(new THREE.MeshBasicMaterial({color:0x769d9d})); //x+
-		materials.push(new THREE.MeshBasicMaterial({color:0x769d9d})); //x-
-		materials.push(new THREE.MeshBasicMaterial({color:0x537474})); //y+
-		materials.push(new THREE.MeshBasicMaterial({color:0x769d9d})); //y-
-		materials.push(new THREE.MeshBasicMaterial({color:0x769d9d})); //z+
-		materials.push(new THREE.MeshBasicMaterial({color:0x769d9d})); //z-
+		var controls = new THREE.OrbitControls(camera,renderer.domElement);
 
-		var geometry = new THREE.CubeGeometry(1,1,1);
-		var material = new THREE.MeshFaceMaterial(materials);
+		//cube
+		var geometry = new THREE.CubeGeometry(100,100,100,1,1,1);
+		var material = new THREE.MeshLambertMaterial({color:0x769d9d});
 		var cube = new THREE.Mesh(geometry,material);
-		scene.add(cube);
+		cube.position.set(-100,5,-50);
+		cube.speed = 150;
+		cube.rotation.y = 0.8;
+		// cube.rotation.x = 0.68;
 
-		camera.position.z = 3;
+		//floor
+		var floorTexture = new THREE.ImageUtils.loadTexture('resources/checkerboard.jpg');
+		floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+		floorTexture.repeat.set(10,10);
+
+		var floorMaterial = new THREE.MeshBasicMaterial({map:floorTexture,side:THREE.DoubleSide});
+		var floorGeometry = new THREE.PlaneGeometry(1000,1000,1,1);
+		var floor = new THREE.Mesh(floorGeometry,floorMaterial);
+		floor.position.y = -46;
+		floor.rotation.x = Math.PI / 2;
+
+		scene.add(cube);
+		scene.add(ambiance);
+		scene.add(light);
+		scene.add(floor);
 
 		var render = function() {
 			requestAnimationFrame(render);
 
 			time.update();
+			controls.update();
 
 			if(keys.indexOf(37) != -1) { //left
-				cube.rotation.y -= time.diff / 1000;
-				cube.position.x -= time.diff / 1000;
+				cube.rotation.y -= (time.diff / 1000) * 3;
+				cube.position.x -= (time.diff / 1000) * cube.speed;
 			}
 			if(keys.indexOf(39) != -1) { //right
-				cube.rotation.y += time.diff / 1000;
-				cube.position.x += time.diff / 1000;
+				cube.rotation.y += (time.diff / 1000) * 3;
+				cube.position.x += (time.diff / 1000) * cube.speed;
 			}
 			if(keys.indexOf(38) != -1) { //up
-				cube.rotation.x -= time.diff / 1000;
-				cube.position.z -= time.diff / 1000;
+				cube.rotation.x -= (time.diff / 1000) * 3;
+				cube.position.z -= (time.diff / 1000) * cube.speed;
 			}
 			if(keys.indexOf(40) != -1) { //down
-				cube.rotation.x += time.diff / 1000;
-				cube.position.z += time.diff / 1000;
+				cube.rotation.x += (time.diff / 1000) * 3;
+				cube.position.z += (time.diff / 1000) * cube.speed;
 			}
 
 			renderer.render(scene,camera);
