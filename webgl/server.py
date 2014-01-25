@@ -1,23 +1,15 @@
-import os.path
-import re
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-import tornado.web
+#Http server for serving files locally. Required for testing webgl resources offline. By Juan Vallejo
+import os
+from wsgiref.simple_server import make_server
 
-class MainHandler(tornado.web.RequestHandler):
-	def get(self,url):
-		path = 'threejs.html' if self.request.uri == '/' else self.request.uri[1:]
+def MainHandler(env,response):
+	path = 'threejs.html' if env['PATH_INFO'] == '/' else env['PATH_INFO'][1:]
+	filetype = path.split('.')
+	filetype = filetype[len(filetype)-1]
 
-		if(len(path.split('?')) > 1):
-			path = path.split('?')[0]
-
-		pathsplit = path.split('.')
-
-		filetype = pathsplit[len(pathsplit)-1]
-
-	 	type = {
+	type = {
 			'css':'text/css',
+			'dae':'model/vnd.collada+xml',
 			'html':'text/html',
 			'jpg':'image/jpeg',
 			'js':'application/javascript',
@@ -27,30 +19,15 @@ class MainHandler(tornado.web.RequestHandler):
 			'text':'text/plain',
 			'woff':'application/x-woff-font',
 			'xml':'application/xml'
-		}
+	}
 
-		try:
-			self.set_status(200,'OK')
-			self.set_header('Content-Type',(type[filetype] or type['text']))
+	status = '200 OK'
+	headers = [('Content-Type',(type[filetype] or type['text']))]
 
-			file = open(os.path.dirname(__file__)+path,'r')
+	response(status,headers)
 
-			self.write(file.read())
-		except:
-			self.set_status(404,'Not Found')
-			print '404 '+type[filetype]
+	file = open(os.path.dirname(__file__)+path,'r')
+	return file.read()
 
-def Main():
-	tornado.options.parse_command_line()
-
-	application = tornado.web.Application([
-		(r'/(.*)',MainHandler),
-	])
-
-	server = tornado.httpserver.HTTPServer(application)
-	server.listen(8000)
-
-	tornado.ioloop.IOLoop.instance().start()
-
-if(__name__ == '__main__'):
-	Main()
+server = make_server('',8000,MainHandler)
+server.serve_forever()

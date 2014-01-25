@@ -5,6 +5,7 @@
 	<title></title>
 <link rel="stylesheet" href="reset.css"/>
 <script src="three.js/build/three.min.js"></script>
+<script src="resources/ColladaLoader.js"></script>
 <script src="resources/OrbitControls.js"></script>
 <style type="text/css">
 body,html {
@@ -30,20 +31,20 @@ width:100%; height:100%;
 				this.last = this.now;
 			}
 		};
-		
+
 		var keys = [];
 		var scene = new THREE.Scene();
 
 		//lighting & ambiance
 		var ambiance = new THREE.AmbientLight(0x111111);
 		var light = new THREE.PointLight(0xffffff);
-		light.position.set(0,250,50);
+		light.position.set(100,150,50); //0,250,50
 
 		// scene.fog = new THREE.FogExp2(0x9999ff,0.00025);
 
 		//camera
 		var camera = new THREE.PerspectiveCamera(65,window.innerWidth/window.innerHeight,0.1,20000);
-		camera.position.set(0,150,400);
+		camera.position.set(200,150,380); //0,150,400
 		camera.lookAt(scene.position);
 
 		//renderer & controls
@@ -62,8 +63,31 @@ width:100%; height:100%;
 		cube.rotation.y = 0.8;
 		// cube.rotation.x = 0.68;
 
+		//Collada
+		function Collada(name,scale,callback) {
+			var loader = new THREE.ColladaLoader(name,scale);
+			var object;
+
+			loader.options.convertUpAxis = true;
+			loader.load('models/'+name+'.dae',function(data) {
+				object = data.scene;
+				object.scale.x = object.scale.y = object.scale.z = scale;
+				object.position.y = -82;
+				object.updateMatrix();
+
+				callback.call(this,object);
+			});
+
+			return object;
+		}
+
+		//house
+		var house = new Collada('72248_WRBreezehome_zip_by_lauzge/WRBreezehome',30,function(object) {
+			scene.add(object);
+		});
+
 		//floor
-		var floorTexture = new THREE.ImageUtils.loadTexture('resources/checkerboard.jpg');
+		var floorTexture = new THREE.ImageUtils.loadTexture('resources/grass.jpg');
 		floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
 		floorTexture.repeat.set(10,10);
 
@@ -73,7 +97,7 @@ width:100%; height:100%;
 		floor.position.y = -46;
 		floor.rotation.x = Math.PI / 2;
 
-		scene.add(cube);
+		// scene.add(cube);
 		scene.add(ambiance);
 		scene.add(light);
 		scene.add(floor);
