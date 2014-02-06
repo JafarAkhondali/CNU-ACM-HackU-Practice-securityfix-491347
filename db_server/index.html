@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+	<title>this is a test</title>
+<style>
+@import url(http://fonts.googleapis.com/css?family=Nunito:400,300);
+@import url(http://fonts.googleapis.com/css?family=Lato:300,400,700); 
+body,html {
+padding:0; margin:0; width:100%; height:100%;
+}
+body {
+font:300 16px 'Nunito',sans-serif;
+}
+span {
+display:block; margin:2px 0 2px 0;
+}
+
+#wrapper {
+width:500px; margin:0 auto;
+}
+
+.bold {
+font-weight:400;
+}
+.module {
+width:500px; min-height:50px; background:rgba(228,230,229,0.8); padding:5px 0 5px 0;
+}
+	.module#input-wrapper {
+	border-top:1px solid blue; height:20px; position:relative; padding:0; width:100%;
+	}
+	.module-input {
+	width:100%; padding:5px 0 5px 0; height:60px; display:block; font:inherit; color:inherit; border:0;
+	}
+</style>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io.connect(window.location.hostname == 'localhost'? 'http://localhost' : 'http://10.77.13.80');
+socket.on('connected',function(data) {
+	write(data.message);
+	console.log(data.data);
+});
+socket.on('line',function(data) {
+	write(data);
+});
+
+var write = function(text,format) {
+	var domElement = document.createElement('span');
+	var settings = {
+		bold:format && format.bold ? domElement.className = 'bold' : false,
+		text:typeof text == 'string' ? domElement.innerHTML = text : domElement.innerHTML = text.sender+' '+text.message
+	};
+
+	for(var i in settings) settings[i];
+
+	document.getElementById("messages").appendChild(domElement);
+};
+</script>
+</head>
+<body>
+<div id="wrapper">
+	<div id="messages" class="module"></div><!--#messages-->
+	<div id="input-wrapper" class="module">
+		<input type="text" placeholder="message..." class="module-input" id="input"/>
+	</div><!--#input-->
+</div><!--#wrapper-->
+</body>
+</html>

@@ -21,6 +21,7 @@ class MainHandler(tornado.web.RequestHandler):
 			'dae':'model/vnd.collada+xml',
 			'dds':'x-image/dds',
 			'html':'text/html',
+			'ico':'image/x-icon',
 			'jpg':'image/jpeg',
 			'js':'application/javascript',
 			'json':'application/json',
@@ -40,7 +41,7 @@ class MainHandler(tornado.web.RequestHandler):
 			self.write(file.read())
 		except:
 			self.set_status(404,'Not Found')
-			print '404 '+type[filetype]
+			print '404 '+(type[filetype] or path)
 
 def Main():
 	tornado.options.parse_command_line()
